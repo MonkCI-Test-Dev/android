@@ -1,0 +1,34 @@
+#!/bin/bash
+# MonkCI pre-artifact-capture hook to handle checkov SARIF directory output
+#
+# This hook runs before MonkCI captures artifacts and ensures that
+# checkov.sarif is a file rather than a directory.
+
+set -e
+
+if [ -d "checkov.sarif" ]; then
+    echo "[pre-artifact-capture] Found checkov.sarif as directory, converting to file..."
+    
+    # Find the actual SARIF file inside the directory
+    sarif_file=$(find checkov.sarif -name "*.sarif" -type f | head -n 1)
+    
+    if [ -n "$sarif_file" ]; then
+        # Copy the file to a temporary location
+        cp "$sarif_file" checkov.sarif.tmp
+        # Remove the directory
+        rm -rf checkov.sarif
+        # Move the file to the expected location
+        mv checkov.sarif.tmp checkov.sarif
+        echo "[pre-artifact-capture] Successfully converted checkov.sarif directory to file"
+    else
+        echo "[pre-artifact-capture] WARNING: No SARIF file found in checkov.sarif directory"
+        # Create an empty valid SARIF file
+        rm -rf checkov.sarif
+        echo '{"version":"2.1.0","$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","runs":[]}' > checkov.sarif
+        echo "[pre-artifact-capture] Created empty SARIF file"
+    fi
+elif [ -f "checkov.sarif" ]; then
+    echo "[pre-artifact-capture] checkov.sarif is already a file, no action needed"
+else
+    echo "[pre-artifact-capture] No checkov.sarif found, skipping"
+fi

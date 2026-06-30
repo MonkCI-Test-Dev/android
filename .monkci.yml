@@ -1,0 +1,10 @@
+# MonkCI Configuration
+# Disable automatic checkov scanning to prevent SARIF directory issues
+# Checkov will be handled by repository workflows instead
+
+security-scanning:
+  checkov:
+    enabled: false
+
+# Artifact capture for checkov.sarif is handled by the post-job hook
+# to properly deal with checkov creating a directory instead of a file

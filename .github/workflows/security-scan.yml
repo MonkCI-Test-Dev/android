@@ -1,0 +1,101 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    # Run weekly on Mondays at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  checkov:
+    name: Checkov IaC Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Checkov scan
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: dockerfile,secrets
+          output_format: sarif
+          output_file_path: checkov.sarif
+          download_external_modules: true
+          soft_fail: true
+          
+      - name: Consolidate SARIF output
+        if: always()
+        run: |
+          # Checkov may create a directory with SARIF results
+          # Consolidate into a single file for upload
+          
+          # Check for checkov.sarif directory (MonkCI scenario)
+          if [ -d "checkov.sarif" ]; then
+            echo "Found checkov.sarif directory, finding SARIF file inside..."
+            sarif_file=$(find checkov.sarif -name "*.sarif" -type f | head -n 1)
+            if [ -n "$sarif_file" ]; then
+              cp "$sarif_file" checkov-final.sarif
+              rm -rf checkov.sarif
+              mv checkov-final.sarif checkov.sarif
+              echo "Consolidated SARIF from directory: $sarif_file"
+            else
+              # No file found, keep directory or create empty file
+              echo "No SARIF file found in checkov.sarif directory"
+              rm -rf checkov.sarif
+              echo '{"version":"2.1.0","$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","runs":[]}' > checkov.sarif
+            fi
+          elif [ -f "checkov.sarif" ]; then
+            echo "checkov.sarif file already exists"
+          elif [ -d "results.sarif" ]; then
+            echo "Found results.sarif directory, finding SARIF file..."
+            sarif_file=$(find results.sarif -name "*.sarif" -type f | head -n 1)
+            if [ -n "$sarif_file" ]; then
+              cp "$sarif_file" checkov.sarif
+              echo "Consolidated SARIF from results.sarif: $sarif_file"
+            else
+              echo "No SARIF file found in results.sarif directory"
+              echo '{"version":"2.1.0","$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","runs":[]}' > checkov.sarif
+            fi
+          elif [ -f "results.sarif" ]; then
+            cp results.sarif checkov.sarif
+            echo "Using results.sarif file"
+          else
+            echo "No SARIF output found, creating empty SARIF"
+            echo '{"version":"2.1.0","$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","runs":[]}' > checkov.sarif
+          fi
+          
+          # Verify the output is a file
+          if [ -f "checkov.sarif" ]; then
+            echo "✓ checkov.sarif is a file"
+            ls -lh checkov.sarif
+          else
+            echo "✗ checkov.sarif is not a file!"
+            exit 1
+          fi
+          
+      - name: Upload SARIF file
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov.sarif
+          category: checkov
+          
+      - name: Upload SARIF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-sarif
+          path: checkov.sarif
+          retention-days: 30

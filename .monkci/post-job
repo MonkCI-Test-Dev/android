@@ -1,0 +1,42 @@
+#!/bin/bash
+# MonkCI post-job hook to handle checkov SARIF directory output
+#
+# Checkov creates a directory when using --output-file-path,
+# but MonkCI's artifact capture expects a file. This script
+# consolidates the directory contents into a single file.
+
+set -e
+
+# If checkov.sarif is a directory, convert it to a file in-place
+# This ensures MonkCI's artifact capture (which happens later) will work correctly
+if [ -d "checkov.sarif" ]; then
+    echo "[post-job] Found checkov.sarif as directory, converting to file..."
+    
+    # Find the actual SARIF file inside the directory
+    sarif_file=$(find checkov.sarif -name "*.sarif" -o -name "results*.json" | head -n 1)
+    
+    if [ -n "$sarif_file" ]; then
+        # Copy the file to a temporary location
+        cp "$sarif_file" checkov.sarif.tmp
+        # Remove the directory
+        rm -rf checkov.sarif
+        # Move the file to the expected location
+        mv checkov.sarif.tmp checkov.sarif
+        echo "[post-job] Successfully converted checkov.sarif directory to file"
+    else
+        echo "[post-job] WARNING: No SARIF file found in checkov.sarif directory"
+        # Create an empty valid SARIF file
+        rm -rf checkov.sarif
+        echo '{"version":"2.1.0","$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","runs":[]}' > checkov.sarif
+        echo "[post-job] Created empty SARIF file"
+    fi
+elif [ -f "checkov.sarif" ]; then
+    echo "[post-job] checkov.sarif is already a file, no action needed"
+fi
+
+# If CAPTURE_DIR is set, also copy to the capture directory
+if [ -n "$CAPTURE_DIR" ] && [ -f "checkov.sarif" ]; then
+    echo "[post-job] Copying checkov.sarif to capture directory..."
+    cp checkov.sarif "$CAPTURE_DIR/checkov.sarif"
+    echo "[post-job] Successfully captured checkov.sarif"
+fi

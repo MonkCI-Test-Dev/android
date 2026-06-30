@@ -1,0 +1,12 @@
+# Checkov configuration
+# Configure output format to ensure SARIF is generated as a single file
+# rather than a directory structure
+
+# Use compact output format
+compact: true
+
+# Ensure output goes to stdout by default rather than creating directories
+output: sarif
+
+# Skip creating separate files per framework
+skip-framework: []
