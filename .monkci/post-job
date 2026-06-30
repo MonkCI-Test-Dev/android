@@ -1,0 +1,25 @@
+#!/bin/bash
+# MonkCI post-job hook to handle checkov SARIF directory output
+#
+# Checkov creates a directory when using --output-file-path,
+# but MonkCI's artifact capture expects a file. This script
+# consolidates the directory contents into a single file.
+
+set -e
+
+if [ -d "checkov.sarif" ] && [ -n "$CAPTURE_DIR" ]; then
+    echo "Converting checkov.sarif directory to single file..."
+    
+    # If checkov.sarif is a directory, find the actual SARIF file inside it
+    # and copy that to the capture directory
+    sarif_file=$(find checkov.sarif -name "*.sarif" -o -name "results*.json" | head -n 1)
+    
+    if [ -n "$sarif_file" ]; then
+        cp "$sarif_file" "$CAPTURE_DIR/checkov.sarif"
+        echo "Successfully captured checkov SARIF from $sarif_file"
+    else
+        # If no SARIF file found, copy the entire directory
+        cp -r checkov.sarif "$CAPTURE_DIR/checkov.sarif"
+        echo "Captured checkov.sarif directory (no single file found)"
+    fi
+fi
