@@ -9,5 +9,6 @@ security-scanning:
 # Alternative: configure checkov output handling
 artifact-capture:
   checkov-sarif:
+    path: checkov.sarif
     # Handle directory output from checkov
     recursive: true
