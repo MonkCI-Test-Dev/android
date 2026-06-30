@@ -5,9 +5,6 @@
 security-scanning:
   checkov:
     enabled: false
-    
-# Alternative: configure checkov output handling
-# The pre-artifact-capture hook ensures checkov.sarif is always a file
-artifact-capture:
-  checkov-sarif:
-    path: checkov.sarif
+
+# Artifact capture for checkov.sarif is handled by the post-job hook
+# to properly deal with checkov creating a directory instead of a file
