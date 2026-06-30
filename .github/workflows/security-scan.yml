@@ -31,7 +31,7 @@ jobs:
           directory: .
           framework: dockerfile,secrets
           output_format: sarif
-          output_file_path: ./
+          output_file_path: checkov.sarif
           download_external_modules: true
           soft_fail: true
           
