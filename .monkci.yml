@@ -7,8 +7,7 @@ security-scanning:
     enabled: false
     
 # Alternative: configure checkov output handling
+# The pre-artifact-capture hook ensures checkov.sarif is always a file
 artifact-capture:
   checkov-sarif:
     path: checkov.sarif
-    # Handle directory output from checkov
-    recursive: true
