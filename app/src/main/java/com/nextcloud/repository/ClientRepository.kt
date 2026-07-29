@@ -28,7 +28,7 @@ interface ClientRepository {
      *
      * @param onComplete A callback function that receives the [OwnCloudClient] instance once available.
      */
-    fun getOwncloudClient(onComplete: (OwnCloudClient) -> Unit
+    fun getOwncloudClient(onComplete: (OwnCloudClient) -> Unit)
 
     /**
      * Retrieves an instance of [OwnCloudClient] as a suspend function.
