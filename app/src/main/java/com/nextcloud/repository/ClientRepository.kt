@@ -15,12 +15,6 @@ import com.owncloud.android.lib.common.OwnCloudClient
  * Provides both callback-based and suspend function versions for flexibility in usage.
  */
 interface ClientRepository {
-    /**
-     * Retrieves an instance of [NextcloudClient] using a callback.
-     *
-     * @param onComplete A callback function that receives the [NextcloudClient] instance once available.
-     */
-    fun getNextcloudClient(onComplete: (NextcloudClient) -> Unit)
 
     /**
      * Retrieves an instance of [NextcloudClient] as a suspend function.
@@ -34,7 +28,7 @@ interface ClientRepository {
      *
      * @param onComplete A callback function that receives the [OwnCloudClient] instance once available.
      */
-    fun getOwncloudClient(onComplete: (OwnCloudClient) -> Unit)
+    fun getOwncloudClient(onComplete: (OwnCloudClient) -> Unit
 
     /**
      * Retrieves an instance of [OwnCloudClient] as a suspend function.
