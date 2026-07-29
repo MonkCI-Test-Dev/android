@@ -141,38 +141,6 @@ android {
                 resConfigs("xxxhdpi")
             }
         }
-
-        productFlavors {
-            // used for f-droid
-            register("generic") {
-                applicationId = "com.nextcloud.client"
-                dimension = "default"
-            }
-
-            register("gplay") {
-                applicationId = "com.nextcloud.client"
-                dimension = "default"
-            }
-
-            register("huawei") {
-                applicationId = "com.nextcloud.client"
-                dimension = "default"
-            }
-
-            register("versionDev") {
-                applicationId = "com.nextcloud.android.beta"
-                dimension = "default"
-                versionCode = 20220322
-                versionName = "20220322"
-            }
-
-            register("qa") {
-                applicationId = "com.nextcloud.android.qa"
-                dimension = "default"
-                versionCode = 1
-                versionName = "1"
-            }
-        }
     }
 
     testOptions {
