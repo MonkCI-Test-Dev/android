@@ -18,7 +18,7 @@ permissions:
 jobs:
   analyze:
     name: Analyze
-    runs-on: monkci-ubunti-24.04-4
+    runs-on: monkci-ubuntu-24.04-8
     permissions:
       actions: read
       contents: read
