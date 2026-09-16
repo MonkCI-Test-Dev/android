@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest-low
+    runs-on: monkci-ubuntu-24.04-8
 
     name: translations-string-xml
 
